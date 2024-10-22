@@ -1,0 +1,36 @@
+name: SAHRUL-GUNAWAN-WIN10
+
+on: workflow_dispatch
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - name: DOWNLOAD NGROK ACCESS
+      run: |
+        Invoke-WebRequest https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
+        Invoke-WebRequest https://raw.githubusercontent.com/SahrulGunawan-ID/FREE-RDP/refs/heads/main/MODULE/START.bat -OutFile start.bat
+        Invoke-WebRequest https://raw.githubusercontent.com/SahrulGunawan-ID/FREE-RDP/refs/heads/main/MODULE/WALLPAPER.bat -OutFile wallpaper.bat
+        Invoke-WebRequest https://raw.githubusercontent.com/SahrulGunawan-ID/FREE-RDP/refs/heads/main/MODULE/LOOP.bat -OutFile loop.bat
+    - name: MENGEXTRAK FILE NGROK
+      run: Expand-Archive ngrok.zip
+    - name: MENGHUBUNGKAN AKUN NGROK
+      run: .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
+      env:
+        NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+    - name: SEDANG MEBERI AKSES WAIT
+      run: | 
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
+        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
+        
+        copy wallpaper.bat D:\a\wallpaper.bat
+    - name: Make Tunnel.
+      run: Start-Process Powershell -ArgumentList '-Noexit -Command ".\ngrok\ngrok.exe tcp --region ap 3389"'
+    - name: PERMINTAAN CPU DAN RAM
+      run: cmd /c start.bat
+    - name: SUKSES TERHUBUNG KE SERVER RDP
+      run: cmd /c loop.bat
+      
